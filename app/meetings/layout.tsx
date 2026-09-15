@@ -22,7 +22,9 @@ export default async function RootLayout({ children }: LayoutProps<"/meetings">)
   return (
     <>
       <NavLinks currentMeetingId={currentMeetingId} />
-      {children}
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+        {children}
+      </main>
     </>
   );
 }
