@@ -9,7 +9,7 @@ export default function Home() {
           <Link className="text-white hover:underline" href="/meetings">View All Meetings</Link>
         </nav>
         <div className="flex flex-col items-center gap-4 text-center">
-          <Image className="max-w-lg w-full" src="/chapel.jpg" alt="Inside the chapel" width={1920} height={1440} />
+          <Image className="max-w-lg w-full" src="/chapel.jpg" alt="Inside the chapel" width={1920} height={1440} priority />
           <p className="text-center text-lg text-gray-700 dark:text-gray-300 mb-4">
             Welcome to our sacrament meetings page.
           </p>
