@@ -1,6 +1,7 @@
 import MeetingDetail from "../../components/MeetingDetail";
 import type { SacramentMeeting } from "../../lib/types";
 import { parseMeetingId } from "../../lib/validation";
+import { getBaseUrl } from "../../lib/base-url";
 
 export default async function MeetingPage({
   params,
@@ -13,7 +14,7 @@ export default async function MeetingPage({
             return <div className="p-4 text-center">Invalid meeting ID</div>;
         }
 
-    const response = await fetch(`http://localhost:3000/api/meetings/${id}`, {
+    const response = await fetch(`${getBaseUrl()}/api/meetings/${id}`, {
     cache: "no-store",
     });
     

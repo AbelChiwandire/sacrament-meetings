@@ -1,8 +1,9 @@
 import MeetingCard from "../components/MeetingCard";
 import type { SacramentMeeting } from "../lib/types";
+import { getBaseUrl } from "../lib/base-url";
 
 export default async function MeetingsPage() {
-  const response = await fetch("http://localhost:3000/api/meetings", {
+  const response = await fetch(`${getBaseUrl()}/api/meetings`, {
     cache: "no-store",
   });
   
