@@ -10,7 +10,7 @@ export default function MeetingCard({meeting}: {meeting: SacramentMeeting}) {
                 <p><strong>Meeting Type:</strong> {meeting.meetingType}</p>
                 <p><strong>Presiding:</strong> {meeting.presiding}</p>
             </div>
-            <Link href={`/meetings/${meeting.id}`} className="text-blue-500 hover:underline">
+            <Link href={`/meetings/${meeting.id}`} className="text-blue-800 hover:underline">
                 View Details
             </Link>
         </div>
