@@ -1,12 +1,12 @@
 import { getMeetingById } from "../../../lib/meetings-db";
-import { parseMeetingId } from "../../../lib/validation";
+import { validateInt } from "../../../lib/validation";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const meetingId = parseMeetingId(id);
+  const meetingId = validateInt(id);
 
   if (meetingId === null) {
     return new Response(JSON.stringify({ error: "Invalid ID" }), {
@@ -15,7 +15,7 @@ export async function GET(
     });
   }
 
-  const meeting = getMeetingById(meetingId);
+  const meeting = await getMeetingById(meetingId);
 
   if (!meeting) {
     return new Response(JSON.stringify({ error: "Meeting not found" }), {

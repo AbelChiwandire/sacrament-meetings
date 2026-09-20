@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import NavLinks from "../components/NavLinks";
-import { getMeetings } from "../lib/meetings-db";
-import { getCurrentSunday, toLocalDateString } from "../lib/date-utils";
+import NavLinks from "../../components/NavLinks";
+import { getMeetings } from "../../lib/meetings-db";
+import { getCurrentSunday, toLocalDateString } from "../../lib/date-utils";
 
 export const metadata: Metadata = {
   title: "Sacrament Meetings",
@@ -10,14 +10,14 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-function getCurrentMeetingId(): number | null {
+async function getCurrentMeetingId(): Promise<number | null> {
   const sundayString = toLocalDateString(getCurrentSunday());
-  const meetings = getMeetings(sundayString);
+  const meetings = await getMeetings("", 1, sundayString);
   return meetings[0]?.id ?? null;
 }
 
 export default async function RootLayout({ children }: LayoutProps<"/meetings">) {
-  const currentMeetingId = getCurrentMeetingId();
+  const currentMeetingId = await getCurrentMeetingId();
 
   return (
     <>
