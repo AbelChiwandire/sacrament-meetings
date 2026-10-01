@@ -1,17 +1,23 @@
 import { z } from 'zod';
 
-const HymnSchema = z.object({
+interface ErrorNode {
+    errors: string[];
+    properties?: Record<string, ErrorNode>;
+    items?: (ErrorNode | undefined)[];
+}
+
+export const HymnSchema = z.object({
     number: z.coerce.number().int().positive(),
     title: z.string().min(1),
 });
 
-const SpeakerItemSchema = z.object({
+export const SpeakerItemSchema = z.object({
     name: z.string().min(1),
     topic: z.string().min(1),
     type: z.enum(['speaker', 'musical-number']),
 });
 
-const WardBusinessItemSchema = z.object({
+export const WardBusinessItemSchema = z.object({
     description: z.string().min(1),
 });
 
@@ -42,6 +48,17 @@ export const MeetingFormSchema = z.object({
     closingPrayer: z.string().min(2),
 });
 
+export const MeetingApiSchema = z.object({
+    ...MeetingFormSchema.shape,
+
+    announcements: z.array(z.string()).optional(),
+    openingHymn: HymnSchema,
+    wardBusiness: z.array(WardBusinessItemSchema).optional(),
+    speakers: z.array(SpeakerItemSchema).optional(),
+    sacramentHymn: HymnSchema,
+    closingHymn: HymnSchema,
+});
+
 export const MeetingIdSchema = z.coerce.number().int().positive();
 
 export type MeetingFormErrors = {
@@ -60,23 +77,49 @@ export type MeetingFormErrors = {
     closingPrayer?: string[];
 };
 
+function collectErrors(node?: ErrorNode): string[] | undefined {
+    if (!node) return undefined;
+
+    const messages = [...(node.errors ?? [])];
+
+    if (node.properties) {
+        for (const key of Object.keys(node.properties)) {
+            const childMessages = collectErrors(node.properties[key]);
+            if (childMessages) messages.push(...childMessages);
+        }
+    }
+
+    if (node.items) {
+        for (const item of node.items) {
+            if (item) {
+                const itemMessages = collectErrors(item);
+                if (itemMessages) messages.push(...itemMessages);
+            }
+        }
+    }
+
+    return messages.length > 0 ? messages : undefined;
+}
+
 export function formatValidationErrors(
-    error: z.ZodError<Partial<z.infer<typeof MeetingFormSchema>>>
+    error: z.ZodError<
+        Partial<z.infer<typeof MeetingFormSchema>> | Partial<z.infer<typeof MeetingApiSchema>>
+    >
 ): MeetingFormErrors {
-    const tree = z.treeifyError(error);
+    const tree = z.treeifyError(error) as ErrorNode;
     return {
-        date: tree.properties?.date?.errors,
-        meetingType: tree.properties?.meetingType?.errors,
-        presiding: tree.properties?.presiding?.errors,
-        conducting: tree.properties?.conducting?.errors,
-        announcements: tree.properties?.announcements?.errors,
-        openingHymn: tree.properties?.openingHymn?.errors,
-        openingPrayer: tree.properties?.openingPrayer?.errors,
-        wardBusiness: tree.properties?.wardBusiness?.errors,
-        stakeBusiness: tree.properties?.stakeBusiness?.errors,
-        sacramentHymn: tree.properties?.sacramentHymn?.errors,
-        speakers: tree.properties?.speakers?.errors,
-        closingHymn: tree.properties?.closingHymn?.errors,
-        closingPrayer: tree.properties?.closingPrayer?.errors,
+        date: collectErrors(tree.properties?.date),
+        meetingType: collectErrors(tree.properties?.meetingType),
+        presiding: collectErrors(tree.properties?.presiding),
+        conducting: collectErrors(tree.properties?.conducting),
+        announcements: collectErrors(tree.properties?.announcements),
+        openingHymn: collectErrors(tree.properties?.openingHymn),
+        openingPrayer: collectErrors(tree.properties?.openingPrayer),
+        wardBusiness: collectErrors(tree.properties?.wardBusiness),
+        stakeBusiness: collectErrors(tree.properties?.stakeBusiness),
+        sacramentHymn: collectErrors(tree.properties?.sacramentHymn),
+        speakers: collectErrors(tree.properties?.speakers),
+        closingHymn: collectErrors(tree.properties?.closingHymn),
+        closingPrayer: collectErrors(tree.properties?.closingPrayer),
     };
 }

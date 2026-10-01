@@ -66,53 +66,97 @@ export async function getMeetingById(id: number): Promise<SacramentMeeting | nul
     return (rows[0] as unknown as SacramentMeeting) ?? null;
 }
 
+export class MeetingDateConflictError extends Error {
+    constructor() {
+        super('A meeting already exists on that date.');
+        this.name = 'MeetingDateConflictError';
+    }
+}
+
 export async function createMeeting(
     data: Omit<SacramentMeeting, 'id'>
 ): Promise<SacramentMeeting> {
-    const rows = await sql`
-        INSERT INTO meetings (
-            date, meeting_type, presiding, conducting, announcements,
-            opening_hymn, opening_prayer, ward_business, stake_business,
-            sacrament_hymn, speakers, closing_hymn, closing_prayer
-        ) VALUES (
-            ${data.date}, ${data.meetingType}, ${data.presiding}, ${data.conducting},
-            ${data.announcements ?? []},
-            ${JSON.stringify(data.openingHymn)}::jsonb,
-            ${data.openingPrayer},
-            ${JSON.stringify(data.wardBusiness)}::jsonb,
-            ${data.stakeBusiness},
-            ${JSON.stringify(data.sacramentHymn)}::jsonb,
-            ${JSON.stringify(data.speakers)}::jsonb,
-            ${JSON.stringify(data.closingHymn)}::jsonb,
-            ${data.closingPrayer}
-        )
-        RETURNING ${sql.unsafe(SELECT_COLUMNS)}
-    `;
-    return rows[0] as unknown as SacramentMeeting;
+    try {
+        const rows = await sql`
+            INSERT INTO meetings (
+                date, meeting_type, presiding, conducting, announcements,
+                opening_hymn, opening_prayer, ward_business, stake_business,
+                sacrament_hymn, speakers, closing_hymn, closing_prayer
+            ) VALUES (
+                ${data.date}, ${data.meetingType}, ${data.presiding}, ${data.conducting},
+                ${data.announcements ?? []},
+                ${JSON.stringify(data.openingHymn)}::jsonb,
+                ${data.openingPrayer},
+                ${JSON.stringify(data.wardBusiness)}::jsonb,
+                ${data.stakeBusiness},
+                ${JSON.stringify(data.sacramentHymn)}::jsonb,
+                ${JSON.stringify(data.speakers)}::jsonb,
+                ${JSON.stringify(data.closingHymn)}::jsonb,
+                ${data.closingPrayer}
+            )
+            RETURNING ${sql.unsafe(SELECT_COLUMNS)}
+        `;
+        return rows[0] as unknown as SacramentMeeting;
+    } catch (error) {
+        if (
+            error instanceof Error &&
+            'constraint' in error &&
+            error.constraint === 'meetings_date_key'
+        ) {
+            throw new MeetingDateConflictError();
+        }
+        throw error;
+    }
 }
 
 export async function updateMeeting(
     id: number,
-    updates: Omit<SacramentMeeting, 'id'>
+    updates: Partial<Omit<SacramentMeeting, 'id'>>
 ): Promise<SacramentMeeting | null> {
     const rows = await sql`
         UPDATE meetings SET
-            date            = ${updates.date},
-            meeting_type    = ${updates.meetingType},
-            presiding       = ${updates.presiding},
-            conducting      = ${updates.conducting},
-            announcements   = ${updates.announcements ?? []},
-            opening_hymn    = ${JSON.stringify(updates.openingHymn)}::jsonb,
-            opening_prayer  = ${updates.openingPrayer},
-            ward_business   = ${JSON.stringify(updates.wardBusiness)}::jsonb,
-            stake_business  = ${updates.stakeBusiness},
-            sacrament_hymn  = ${JSON.stringify(updates.sacramentHymn)}::jsonb,
-            speakers        = ${JSON.stringify(updates.speakers)}::jsonb,
-            closing_hymn    = ${JSON.stringify(updates.closingHymn)}::jsonb,
-            closing_prayer  = ${updates.closingPrayer}
+            date = COALESCE(${updates.date ?? null}, date),
+            meeting_type = COALESCE(${updates.meetingType ?? null}, meeting_type),
+            presiding = COALESCE(${updates.presiding ?? null}, presiding),
+            conducting = COALESCE(${updates.conducting ?? null}, conducting),
+            announcements = COALESCE(${updates.announcements ?? null}, announcements),
+            opening_hymn = COALESCE(
+                ${updates.openingHymn !== undefined
+                    ? JSON.stringify(updates.openingHymn)
+                    : null}::jsonb,
+                opening_hymn
+            ),
+            opening_prayer = COALESCE(${updates.openingPrayer ?? null}, opening_prayer),
+            ward_business = COALESCE(
+                ${updates.wardBusiness !== undefined
+                    ? JSON.stringify(updates.wardBusiness)
+                    : null}::jsonb,
+                ward_business
+            ),
+            stake_business = COALESCE(${updates.stakeBusiness ?? null}, stake_business),
+            sacrament_hymn = COALESCE(
+                ${updates.sacramentHymn !== undefined
+                    ? JSON.stringify(updates.sacramentHymn)
+                    : null}::jsonb,
+                sacrament_hymn
+            ),
+            speakers = COALESCE(
+                ${updates.speakers !== undefined
+                    ? JSON.stringify(updates.speakers)
+                    : null}::jsonb,
+                speakers
+            ),
+            closing_hymn = COALESCE(
+                ${updates.closingHymn !== undefined
+                    ? JSON.stringify(updates.closingHymn)
+                    : null}::jsonb,
+                closing_hymn
+            ),
+            closing_prayer = COALESCE(${updates.closingPrayer ?? null}, closing_prayer)
         WHERE id = ${id}
         RETURNING ${sql.unsafe(SELECT_COLUMNS)}
     `;
+
     return (rows[0] as unknown as SacramentMeeting) ?? null;
 }
 

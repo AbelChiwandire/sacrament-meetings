@@ -2,7 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { createMeeting, updateMeeting, deleteMeeting } from './meetings-db';
+import {
+    createMeeting,
+    updateMeeting, deleteMeeting,
+    MeetingDateConflictError
+} from './meetings-db';
 import {
     MeetingFormSchema,
     MeetingIdSchema,
@@ -73,6 +77,9 @@ async function runMutation(
     try {
         await mutation();
     } catch (error) {
+        if (error instanceof MeetingDateConflictError) {
+            return { message: error.message };
+        }
         console.error(logLabel, error);
         throw error;
     }

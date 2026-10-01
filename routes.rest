@@ -1,0 +1,133 @@
+@baseUrl = http://localhost:3000
+
+### Create a valid meeting
+# @name createMeeting
+POST {{baseUrl}}/api/meetings
+Content-Type: application/json
+
+{
+  "date": "2027-10-04",
+  "meetingType": "regular",
+  "presiding": "Bishop Smith",
+  "conducting": "Brother Jones",
+  "announcements": ["Ward temple trip next month"],
+  "openingHymn": { "number": 19, "title": "We Thank Thee, O God, for a Prophet" },
+  "openingPrayer": "Sister Adams",
+  "wardBusiness": [],
+  "stakeBusiness": false,
+  "sacramentHymn": { "number": 169, "title": "As Now We Take the Sacrament" },
+  "speakers": [
+    { "name": "Brother Lee", "topic": "Faith", "type": "speaker" }
+  ],
+  "closingHymn": { "number": 301, "title": "Love at Home" },
+  "closingPrayer": "Brother Kim"
+}
+
+### Expect 400 — missing required fields
+POST {{baseUrl}}/api/meetings
+Content-Type: application/json
+
+{
+  "date": "2027-10-11"
+}
+
+### Expect 400 — invalid meetingType
+POST {{baseUrl}}/api/meetings
+Content-Type: application/json
+
+{
+  "date": "2027-10-11",
+  "meetingType": "not-a-real-type",
+  "presiding": "Bishop Smith",
+  "conducting": "Brother Jones",
+  "openingHymn": { "number": 19, "title": "Hymn" },
+  "openingPrayer": "Sister Adams",
+  "stakeBusiness": false,
+  "sacramentHymn": { "number": 169, "title": "Hymn" },
+  "closingHymn": { "number": 301, "title": "Hymn" },
+  "closingPrayer": "Brother Kim"
+}
+
+### Expect 400 — invalid hymn (number 0)
+POST {{baseUrl}}/api/meetings
+Content-Type: application/json
+
+{
+  "date": "2027-10-11",
+  "meetingType": "regular",
+  "presiding": "Bishop Smith",
+  "conducting": "Brother Jones",
+  "openingHymn": { "number": 0, "title": "" },
+  "openingPrayer": "Sister Adams",
+  "stakeBusiness": false,
+  "sacramentHymn": { "number": 169, "title": "Hymn" },
+  "closingHymn": { "number": 301, "title": "Hymn" },
+  "closingPrayer": "Brother Kim"
+}
+
+### Expect 409 — duplicate date (same date as createMeeting above)
+POST {{baseUrl}}/api/meetings
+Content-Type: application/json
+
+{
+  "date": "2027-10-04",
+  "meetingType": "regular",
+  "presiding": "Bishop Smith",
+  "conducting": "Brother Jones",
+  "openingHymn": { "number": 19, "title": "Hymn" },
+  "openingPrayer": "Sister Adams",
+  "stakeBusiness": false,
+  "sacramentHymn": { "number": 169, "title": "Hymn" },
+  "closingHymn": { "number": 301, "title": "Hymn" },
+  "closingPrayer": "Brother Kim"
+}
+
+### List all meetings
+GET {{baseUrl}}/api/meetings
+
+### List meetings filtered by query
+GET {{baseUrl}}/api/meetings?query=Smith
+
+### List meetings filtered by date
+GET {{baseUrl}}/api/meetings?date=2027-10-04
+
+### Get the created meeting by id
+GET {{baseUrl}}/api/meetings/{{createMeeting.response.body.id}}
+
+### Expect 404 — meeting id that doesn't exist
+GET {{baseUrl}}/api/meetings/999999
+
+### Expect 400 — invalid meeting id
+GET {{baseUrl}}/api/meetings/not-a-number
+
+### Update the created meeting (full replace)
+# @name updateMeeting
+PATCH  {{baseUrl}}/api/meetings/{{createMeeting.response.body.id}}
+Content-Type: application/json
+
+{
+  "conducting": "Brother Chris"
+}
+
+### Expect 404 — update a meeting id that doesn't exist
+PATCH {{baseUrl}}/api/meetings/999999
+Content-Type: application/json
+
+{
+  "date": "2027-11-01",
+  "meetingType": "regular",
+  "presiding": "Bishop Smith",
+  "conducting": "Brother Jones",
+  "openingHymn": { "number": 19, "title": "Hymn" },
+  "openingPrayer": "Sister Adams",
+  "stakeBusiness": false,
+  "sacramentHymn": { "number": 169, "title": "Hymn" },
+  "closingHymn": { "number": 301, "title": "Hymn" },
+  "closingPrayer": "Brother Kim"
+}
+
+### Delete the created meeting
+DELETE {{baseUrl}}/api/meetings/{{createMeeting.response.body.id}}
+
+### Expect 404 — deleting the same meeting again
+DELETE {{baseUrl}}/api/meetings/{{createMeeting.response.body.id}}

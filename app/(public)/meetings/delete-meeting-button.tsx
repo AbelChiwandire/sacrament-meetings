@@ -17,12 +17,12 @@ export default function DeleteMeetingButton({ meetingId }: { meetingId: string }
             <button
                 type="submit"
                 disabled={isPending}
-                className="text-sm text-red-600 hover:underline disabled:opacity-50"
+                className="rounded border border-red-900 px-3 py-1 text-sm text-red-900 hover:bg-red-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
                 {isPending ? 'Deleting...' : 'Delete'}
             </button>
             {state.message ? (
-                <p className="text-sm text-red-600">{state.message}</p>
+                <p className="text-sm text-red-900">{state.message}</p>
             ) : null}
         </form>
     );

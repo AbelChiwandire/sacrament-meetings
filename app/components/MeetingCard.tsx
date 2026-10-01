@@ -1,5 +1,6 @@
 import { SacramentMeeting } from "../lib/types.js";
 import Link from "next/link";
+import DeleteMeetingButton from "../(public)/meetings/delete-meeting-button";
 
 export default function MeetingCard({meeting}: {meeting: SacramentMeeting}) {
     return (
@@ -10,9 +11,12 @@ export default function MeetingCard({meeting}: {meeting: SacramentMeeting}) {
                 <p><strong>Meeting Type:</strong> {meeting.meetingType}</p>
                 <p><strong>Presiding:</strong> {meeting.presiding}</p>
             </div>
-            <Link href={`/meetings/${meeting.id}`} className="text-blue-800 hover:underline">
-                View Details
-            </Link>
+            <div className="flex items-center justify-between">
+                <Link href={`/meetings/${meeting.id}`} className="text-blue-800 hover:underline">
+                    View Details
+                </Link>
+                <DeleteMeetingButton meetingId={String(meeting.id)} />
+            </div>
         </div>
     );
 }
