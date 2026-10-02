@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { HymnFieldErrors } from '@/app/lib/schema';
 import type { State } from '@/app/lib/actions';
 import type { SacramentMeeting, Hymn, SpeakerItem, WardBusinessItem, MeetingType } from '@/app/lib/types';
 
@@ -146,14 +147,14 @@ export function MeetingForm({ formAction, state, isPending, initialValues }: Mee
             <section className={sectionClass} aria-labelledby="music-prayers-heading">
                 <h2 id="music-prayers-heading" className={sectionHeadingClass}>Music &amp; prayers</h2>
                 <div className="grid gap-5 sm:grid-cols-2">
-                    <HymnFields label="Opening hymn" name="openingHymn" value={openingHymn} onChange={setOpeningHymn} errors={state.errors?.openingHymn} />
+                    <HymnFields label="Opening hymn" name="openingHymn" value={openingHymn} onChange={setOpeningHymn} errors={state.errors?.openingHymnErrors} />
                     <div>
                         <label htmlFor="openingPrayer" className={labelClass}>Opening prayer</label>
                         <input id="openingPrayer" name="openingPrayer" type="text" defaultValue={openingPrayer} required aria-describedby="openingPrayer-error" className={inputClass} />
                         <FieldErrors id="openingPrayer-error" errors={state.errors?.openingPrayer} />
                     </div>
-                    <HymnFields label="Sacrament hymn" name="sacramentHymn" value={sacramentHymn} onChange={setSacramentHymn} errors={state.errors?.sacramentHymn} />
-                    <HymnFields label="Closing hymn" name="closingHymn" value={closingHymn} onChange={setClosingHymn} errors={state.errors?.closingHymn} />
+                    <HymnFields label="Sacrament hymn" name="sacramentHymn" value={sacramentHymn} onChange={setSacramentHymn} errors={state.errors?.sacramentHymnErrors} />
+                    <HymnFields label="Closing hymn" name="closingHymn" value={closingHymn} onChange={setClosingHymn} errors={state.errors?.closingHymnErrors} />
                     <div>
                         <label htmlFor="closingPrayer" className={labelClass}>Closing prayer</label>
                         <input id="closingPrayer" name="closingPrayer" type="text" defaultValue={closingPrayer} required aria-describedby="closingPrayer-error" className={inputClass} />
@@ -279,8 +280,9 @@ export function MeetingForm({ formAction, state, isPending, initialValues }: Mee
 
 function HymnFields({
     label, name, value, onChange, errors,
-}: { label: string; name: string; value: Hymn; onChange: (h: Hymn) => void; errors?: string[] }) {
-    const errorId = `${name}-error`;
+}: { label: string; name: string; value: Hymn; onChange: (h: Hymn) => void; errors?: HymnFieldErrors }) {
+    const numberErrorId = `${name}-number-error`;
+    const titleErrorId = `${name}-title-error`;
     return (
         <div>
             <span className={labelClass}>{label}</span>
@@ -290,20 +292,21 @@ function HymnFields({
                     <label htmlFor={`${name}-number`} className="sr-only">Hymn number</label>
                     <input
                         id={`${name}-number`} type="number" value={value.number || ''} className={inputClass}
-                        aria-describedby={errorId}
+                        aria-describedby={numberErrorId}
                         onChange={(e) => onChange({ ...value, number: Number(e.target.value) })}
                     />
+                    <FieldErrors id={numberErrorId} errors={errors?.number} />
                 </div>
                 <div className="flex-1">
                     <label htmlFor={`${name}-title`} className="sr-only">Hymn title</label>
                     <input
                         id={`${name}-title`} type="text" value={value.title} className={inputClass}
-                        aria-describedby={errorId}
+                        aria-describedby={titleErrorId}
                         onChange={(e) => onChange({ ...value, title: e.target.value })}
                     />
+                    <FieldErrors id={titleErrorId} errors={errors?.title} />
                 </div>
             </div>
-            <FieldErrors id={errorId} errors={errors} />
         </div>
     );
 }

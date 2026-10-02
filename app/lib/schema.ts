@@ -148,11 +148,31 @@ export type WardBusinessFieldErrors = {
     description?: string[];
 };
 
-export type MeetingDetailedErrors = MeetingFormErrors & {
+export type HymnFieldErrors = {
+    number?: string[];
+    title?: string[];
+};
+
+export type MeetingDetailedErrors = Omit<
+    MeetingFormErrors,
+    'wardBusiness' | 'speakers' | 'announcements' | 'openingHymn' | 'sacramentHymn' | 'closingHymn'
+> & {
+    openingHymnErrors?: HymnFieldErrors;
+    sacramentHymnErrors?: HymnFieldErrors;
+    closingHymnErrors?: HymnFieldErrors;
     speakerItemErrors?: (SpeakerFieldErrors | undefined)[];
     wardBusinessItemErrors?: (WardBusinessFieldErrors | undefined)[];
     announcementItemErrors?: (string[] | undefined)[];
 };
+
+function hymnFieldErrors(node?: ErrorNode): HymnFieldErrors | undefined {
+    if (!node) return undefined;
+    const entry: HymnFieldErrors = {
+        number: leafErrors(node.properties?.number),
+        title: leafErrors(node.properties?.title),
+    };
+    return entry.number || entry.title ? entry : undefined;
+}
 
 function leafErrors(node?: ErrorNode): string[] | undefined {
     return node?.errors?.length ? node.errors : undefined;
@@ -181,12 +201,19 @@ export function formatDetailedValidationErrors(
 
     const announcementItemErrors = tree.properties?.announcements?.items?.map((item) => leafErrors(item));
 
-    const { wardBusiness, speakers, announcements, ...rest } = formatValidationErrors(error);
+    const {
+        wardBusiness, speakers, announcements,
+        openingHymn, sacramentHymn, closingHymn,
+        ...rest
+    } = formatValidationErrors(error);
 
     return {
         ...rest,
         speakerItemErrors: speakerItemErrors?.some(Boolean) ? speakerItemErrors : undefined,
         wardBusinessItemErrors: wardBusinessItemErrors?.some(Boolean) ? wardBusinessItemErrors : undefined,
         announcementItemErrors: announcementItemErrors?.some(Boolean) ? announcementItemErrors : undefined,
+        openingHymnErrors: hymnFieldErrors(tree.properties?.openingHymn),
+        sacramentHymnErrors: hymnFieldErrors(tree.properties?.sacramentHymn),
+        closingHymnErrors: hymnFieldErrors(tree.properties?.closingHymn),
     };
 }
