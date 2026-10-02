@@ -23,12 +23,27 @@ export const WardBusinessItemSchema = z.object({
 
 function jsonField<T extends z.ZodType>(schema: T) {
     return z.string().transform((val, ctx) => {
+        let parsed: unknown;
         try {
-            return schema.parse(JSON.parse(val));
+            parsed = JSON.parse(val);
         } catch {
             ctx.addIssue({ code: 'custom', message: 'Invalid data format' });
             return z.NEVER;
         }
+
+        const result = schema.safeParse(parsed);
+        if (!result.success) {
+            for (const issue of result.error.issues) {
+                ctx.addIssue({
+                    ...issue,
+                    path: issue.path,
+                    message: issue.message,
+                });
+            }
+            return z.NEVER;
+        }
+
+        return result.data;
     });
 }
 
@@ -121,5 +136,56 @@ export function formatValidationErrors(
         speakers: collectErrors(tree.properties?.speakers),
         closingHymn: collectErrors(tree.properties?.closingHymn),
         closingPrayer: collectErrors(tree.properties?.closingPrayer),
+    };
+}
+
+export type SpeakerFieldErrors = {
+    name?: string[];
+    topic?: string[];
+    type?: string[];
+};
+
+export type WardBusinessFieldErrors = {
+    description?: string[];
+};
+
+export type MeetingDetailedErrors = MeetingFormErrors & {
+    speakerItemErrors?: (SpeakerFieldErrors | undefined)[];
+    wardBusinessItemErrors?: (WardBusinessFieldErrors | undefined)[];
+    announcementItemErrors?: (string[] | undefined)[];
+};
+
+function leafErrors(node?: ErrorNode): string[] | undefined {
+    return node?.errors?.length ? node.errors : undefined;
+}
+
+export function formatDetailedValidationErrors(
+    error: z.ZodError<Partial<z.infer<typeof MeetingFormSchema>>>
+): MeetingDetailedErrors {
+    const tree = z.treeifyError(error) as ErrorNode;
+
+    const speakerItemErrors = tree.properties?.speakers?.items?.map((item) => {
+        if (!item) return undefined;
+        const entry: SpeakerFieldErrors = {
+            name: leafErrors(item.properties?.name),
+            topic: leafErrors(item.properties?.topic),
+            type: leafErrors(item.properties?.type),
+        };
+        return entry.name || entry.topic || entry.type ? entry : undefined;
+    });
+
+    const wardBusinessItemErrors = tree.properties?.wardBusiness?.items?.map((item) => {
+        if (!item) return undefined;
+        const entry: WardBusinessFieldErrors = { description: leafErrors(item.properties?.description) };
+        return entry.description ? entry : undefined;
+    });
+
+    const announcementItemErrors = tree.properties?.announcements?.items?.map((item) => leafErrors(item));
+
+    return {
+        ...formatValidationErrors(error),
+        speakerItemErrors: speakerItemErrors?.some(Boolean) ? speakerItemErrors : undefined,
+        wardBusinessItemErrors: wardBusinessItemErrors?.some(Boolean) ? wardBusinessItemErrors : undefined,
+        announcementItemErrors: announcementItemErrors?.some(Boolean) ? announcementItemErrors : undefined,
     };
 }

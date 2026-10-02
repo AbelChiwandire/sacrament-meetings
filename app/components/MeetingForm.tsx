@@ -115,21 +115,28 @@ export function MeetingForm({ formAction, state, isPending, initialValues }: Mee
             <section className={sectionClass} aria-labelledby="announcements-heading">
                 <h2 id="announcements-heading" className={sectionHeadingClass}>Announcements</h2>
                 <div className="space-y-3">
-                    {announcements.map((value, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                            <input type="hidden" name="announcements" value={value} />
-                            <label htmlFor={`announcement-${i}`} className="sr-only">Announcement {i + 1}</label>
-                            <input
-                                id={`announcement-${i}`} type="text" value={value} className={inputClass}
-                                onChange={(e) => {
-                                    const next = [...announcements]; next[i] = e.target.value; setAnnouncements(next);
-                                }}
-                            />
-                            <button type="button" onClick={() => setAnnouncements(announcements.filter((_, idx) => idx !== i))} className={removeButtonClass}>
-                                Remove
-                            </button>
-                        </div>
-                    ))}
+                    {announcements.map((value, i) => {
+                        const errorId = `announcement-${i}-error`;
+                        return (
+                            <div key={i} className="flex items-start gap-2">
+                                <input type="hidden" name="announcements" value={value} />
+                                <div className="flex-1">
+                                    <label htmlFor={`announcement-${i}`} className="sr-only">Announcement {i + 1}</label>
+                                    <input
+                                        id={`announcement-${i}`} type="text" value={value} className={inputClass}
+                                        aria-describedby={errorId}
+                                        onChange={(e) => {
+                                            const next = [...announcements]; next[i] = e.target.value; setAnnouncements(next);
+                                        }}
+                                    />
+                                    <FieldErrors id={errorId} errors={state.errors?.announcementItemErrors?.[i]} />
+                                </div>
+                                <button type="button" onClick={() => setAnnouncements(announcements.filter((_, idx) => idx !== i))} className={removeButtonClass}>
+                                    Remove
+                                </button>
+                            </div>
+                        );
+                    })}
                 </div>
                 <FieldErrors id="announcements-error" errors={state.errors?.announcements} />
                 <button type="button" onClick={() => setAnnouncements([...announcements, ''])} className={`${secondaryButtonClass} mt-3`}>
@@ -159,28 +166,39 @@ export function MeetingForm({ formAction, state, isPending, initialValues }: Mee
             <section className={sectionClass} aria-labelledby="ward-business-heading">
                 <h2 id="ward-business-heading" className={sectionHeadingClass}>Ward business</h2>
                 <div className="space-y-3">
-                    {wardBusiness.map((item, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                            <input type="hidden" name="wardBusiness" value={JSON.stringify(item)} />
-                            <label htmlFor={`wardBusiness-${i}`} className="sr-only">Ward business item {i + 1}</label>
-                            <input
-                                id={`wardBusiness-${i}`} type="text" value={item.description} className={inputClass}
-                                onChange={(e) => {
-                                    const next = [...wardBusiness]; next[i] = { description: e.target.value }; setWardBusiness(next);
-                                }}
-                            />
-                            <button type="button" onClick={() => setWardBusiness(wardBusiness.filter((_, idx) => idx !== i))} className={removeButtonClass}>
-                                Remove
-                            </button>
-                        </div>
-                    ))}
+                    {wardBusiness.map((item, i) => {
+                        const errorId = `wardBusiness-${i}-error`;
+                        return (
+                            <div key={i} className="flex items-start gap-2">
+                                <input type="hidden" name="wardBusiness" value={JSON.stringify(item)} />
+                                <div className="flex-1">
+                                    <label htmlFor={`wardBusiness-${i}`} className="sr-only">Ward business item {i + 1}</label>
+                                    <input
+                                        id={`wardBusiness-${i}`} type="text" value={item.description} className={inputClass}
+                                        aria-describedby={errorId}
+                                        onChange={(e) => {
+                                            const next = [...wardBusiness]; next[i] = { description: e.target.value }; setWardBusiness(next);
+                                        }}
+                                    />
+                                    <FieldErrors id={errorId} errors={state.errors?.wardBusinessItemErrors?.[i]?.description} />
+                                </div>
+                                <button type="button" onClick={() => setWardBusiness(wardBusiness.filter((_, idx) => idx !== i))} className={removeButtonClass}>
+                                    Remove
+                                </button>
+                            </div>
+                        );
+                    })}
                 </div>
                 <FieldErrors id="wardBusiness-error" errors={state.errors?.wardBusiness} />
                 <button type="button" onClick={() => setWardBusiness([...wardBusiness, { description: '' }])} className={`${secondaryButtonClass} mt-3`}>
                     Add item
                 </button>
                 <label htmlFor="stakeBusiness" className="mt-5 flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                    <input id="stakeBusiness" type="checkbox" checked={stakeBusiness} onChange={(e) => setStakeBusiness(e.target.checked)} className="size-4 rounded border-slate-300 accent-blue-900 focus:ring-blue-900" />
+                    <input
+                        id="stakeBusiness" type="checkbox" checked={stakeBusiness} onChange={(e) => setStakeBusiness(e.target.checked)}
+                        aria-describedby="stakeBusiness-error"
+                        className="size-4 rounded border-slate-300 accent-blue-900 focus:ring-blue-900"
+                    />
                     <span className="text-sm font-semibold text-slate-800">This meeting includes stake business</span>
                 </label>
                 <input type="hidden" name="stakeBusiness" value={stakeBusiness ? 'true' : 'false'} />
@@ -190,46 +208,57 @@ export function MeetingForm({ formAction, state, isPending, initialValues }: Mee
             <section className={sectionClass} aria-labelledby="speakers-heading">
                 <h2 id="speakers-heading" className={sectionHeadingClass}>Speakers &amp; musical numbers</h2>
                 <div className="space-y-4">
-                    {speakers.map((speaker, i) => (
-                        <div key={i} className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-2">
-                            <input type="hidden" name="speakers" value={JSON.stringify(speaker)} />
-                            <div>
-                                <label htmlFor={`speaker-${i}-name`} className={labelClass}>Name</label>
-                                <input
-                                    id={`speaker-${i}-name`} type="text" value={speaker.name} className={inputClass}
-                                    onChange={(e) => {
-                                        const next = [...speakers]; next[i] = { ...speaker, name: e.target.value }; setSpeakers(next);
-                                    }}
-                                />
+                    {speakers.map((speaker, i) => {
+                        const nameErrorId = `speaker-${i}-name-error`;
+                        const topicErrorId = `speaker-${i}-topic-error`;
+                        const typeErrorId = `speaker-${i}-type-error`;
+                        return (
+                            <div key={i} className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-2">
+                                <input type="hidden" name="speakers" value={JSON.stringify(speaker)} />
+                                <div>
+                                    <label htmlFor={`speaker-${i}-name`} className={labelClass}>Name</label>
+                                    <input
+                                        id={`speaker-${i}-name`} type="text" value={speaker.name} className={inputClass}
+                                        aria-describedby={nameErrorId}
+                                        onChange={(e) => {
+                                            const next = [...speakers]; next[i] = { ...speaker, name: e.target.value }; setSpeakers(next);
+                                        }}
+                                    />
+                                    <FieldErrors id={nameErrorId} errors={state.errors?.speakerItemErrors?.[i]?.name} />
+                                </div>
+                                <div>
+                                    <label htmlFor={`speaker-${i}-topic`} className={labelClass}>Topic or selection</label>
+                                    <input
+                                        id={`speaker-${i}-topic`} type="text" value={speaker.topic} className={inputClass}
+                                        aria-describedby={topicErrorId}
+                                        onChange={(e) => {
+                                            const next = [...speakers]; next[i] = { ...speaker, topic: e.target.value }; setSpeakers(next);
+                                        }}
+                                    />
+                                    <FieldErrors id={topicErrorId} errors={state.errors?.speakerItemErrors?.[i]?.topic} />
+                                </div>
+                                <div>
+                                    <label htmlFor={`speaker-${i}-type`} className={labelClass}>Program item</label>
+                                    <select
+                                        id={`speaker-${i}-type`} value={speaker.type} className={inputClass}
+                                        aria-describedby={typeErrorId}
+                                        onChange={(e) => {
+                                            const next = [...speakers]; next[i] = { ...speaker, type: e.target.value as SpeakerItem['type'] }; setSpeakers(next);
+                                        }}
+                                    >
+                                        <option value="speaker">Speaker</option>
+                                        <option value="musical-number">Musical number</option>
+                                    </select>
+                                    <FieldErrors id={typeErrorId} errors={state.errors?.speakerItemErrors?.[i]?.type} />
+                                </div>
+                                <div className="flex items-end">
+                                    <button type="button" onClick={() => setSpeakers(speakers.filter((_, idx) => idx !== i))} className={removeButtonClass}>
+                                        Remove item
+                                    </button>
+                                </div>
                             </div>
-                            <div>
-                                <label htmlFor={`speaker-${i}-topic`} className={labelClass}>Topic or selection</label>
-                                <input
-                                    id={`speaker-${i}-topic`} type="text" value={speaker.topic} className={inputClass}
-                                    onChange={(e) => {
-                                        const next = [...speakers]; next[i] = { ...speaker, topic: e.target.value }; setSpeakers(next);
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor={`speaker-${i}-type`} className={labelClass}>Program item</label>
-                                <select
-                                    id={`speaker-${i}-type`} value={speaker.type} className={inputClass}
-                                    onChange={(e) => {
-                                        const next = [...speakers]; next[i] = { ...speaker, type: e.target.value as SpeakerItem['type'] }; setSpeakers(next);
-                                    }}
-                                >
-                                    <option value="speaker">Speaker</option>
-                                    <option value="musical-number">Musical number</option>
-                                </select>
-                            </div>
-                            <div className="flex items-end">
-                                <button type="button" onClick={() => setSpeakers(speakers.filter((_, idx) => idx !== i))} className={removeButtonClass}>
-                                    Remove item
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
                 <FieldErrors id="speakers-error" errors={state.errors?.speakers} />
                 <button type="button" onClick={() => setSpeakers([...speakers, { name: '', topic: '', type: 'speaker' }])} className={`${secondaryButtonClass} mt-3`}>
@@ -254,6 +283,7 @@ export function MeetingForm({ formAction, state, isPending, initialValues }: Mee
 function HymnFields({
     label, name, value, onChange, errors,
 }: { label: string; name: string; value: Hymn; onChange: (h: Hymn) => void; errors?: string[] }) {
+    const errorId = `${name}-error`;
     return (
         <div>
             <span className={labelClass}>{label}</span>
@@ -263,6 +293,7 @@ function HymnFields({
                     <label htmlFor={`${name}-number`} className="sr-only">Hymn number</label>
                     <input
                         id={`${name}-number`} type="number" value={value.number || ''} className={inputClass}
+                        aria-describedby={errorId}
                         onChange={(e) => onChange({ ...value, number: Number(e.target.value) })}
                     />
                 </div>
@@ -270,11 +301,12 @@ function HymnFields({
                     <label htmlFor={`${name}-title`} className="sr-only">Hymn title</label>
                     <input
                         id={`${name}-title`} type="text" value={value.title} className={inputClass}
+                        aria-describedby={errorId}
                         onChange={(e) => onChange({ ...value, title: e.target.value })}
                     />
                 </div>
             </div>
-            <FieldErrors id={`${name}-error`} errors={errors} />
+            <FieldErrors id={errorId} errors={errors} />
         </div>
     );
 }

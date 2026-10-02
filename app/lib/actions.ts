@@ -10,12 +10,12 @@ import {
 import {
     MeetingFormSchema,
     MeetingIdSchema,
-    formatValidationErrors,
-    type MeetingFormErrors,
+    formatDetailedValidationErrors,
+    type MeetingDetailedErrors,
 } from './schema';
 
 export type State = {
-    errors?: MeetingFormErrors;
+    errors?: MeetingDetailedErrors;
     message?: string | null;
     values?: {
         date?: string;
@@ -81,7 +81,7 @@ async function runMutation(
             return { message: error.message };
         }
         console.error(logLabel, error);
-        throw error;
+        throw new Error('We couldn\'t complete that meeting change. Please try again.');
     }
 
     revalidatePath('/meetings');
@@ -95,7 +95,7 @@ export async function createMeetingAction(
     const validatedData = validateMeetingForm(formData);
     if (!validatedData.success) {
         return {
-            errors: formatValidationErrors(validatedData.error),
+            errors: formatDetailedValidationErrors(validatedData.error),
             message: 'Missing or invalid fields. Failed to create Meeting.',
             values: getRawMeetingValues(formData),
         };
@@ -121,7 +121,7 @@ export async function updateMeetingAction(
     const validatedData = validateMeetingForm(formData);
     if (!validatedData.success) {
         return {
-            errors: formatValidationErrors(validatedData.error),
+            errors: formatDetailedValidationErrors(validatedData.error),
             message: 'Missing or invalid fields. Failed to update Meeting.',
             values: getRawMeetingValues(formData),
         };
