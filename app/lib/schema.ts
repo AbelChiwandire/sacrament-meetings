@@ -113,7 +113,8 @@ function collectErrors(node?: ErrorNode): string[] | undefined {
         }
     }
 
-    return messages.length > 0 ? messages : undefined;
+    const unique = Array.from(new Set(messages));
+    return unique.length > 0 ? unique : undefined;
 }
 
 export function formatValidationErrors(
@@ -156,7 +157,8 @@ export type MeetingDetailedErrors = MeetingFormErrors & {
 };
 
 function leafErrors(node?: ErrorNode): string[] | undefined {
-    return node?.errors?.length ? node.errors : undefined;
+    if (!node?.errors?.length) return undefined;
+    return Array.from(new Set(node.errors));
 }
 
 export function formatDetailedValidationErrors(
