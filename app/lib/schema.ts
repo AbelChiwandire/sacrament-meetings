@@ -52,7 +52,7 @@ export const MeetingFormSchema = z.object({
     meetingType: z.enum(['testimony', 'regular', 'stake', 'general', 'special']),
     presiding: z.string().min(2),
     conducting: z.string().min(2),
-    announcements: z.array(z.string()).optional(),
+    announcements: z.array(z.string().min(1, 'Announcement cannot be empty')).optional(),
     openingHymn: jsonField(HymnSchema),
     openingPrayer: z.string().min(2),
     wardBusiness: z.array(jsonField(WardBusinessItemSchema)).optional().default([]),
@@ -66,7 +66,6 @@ export const MeetingFormSchema = z.object({
 export const MeetingApiSchema = z.object({
     ...MeetingFormSchema.shape,
 
-    announcements: z.array(z.string()).optional(),
     openingHymn: HymnSchema,
     wardBusiness: z.array(WardBusinessItemSchema).optional(),
     speakers: z.array(SpeakerItemSchema).optional(),
@@ -113,8 +112,7 @@ function collectErrors(node?: ErrorNode): string[] | undefined {
         }
     }
 
-    const unique = Array.from(new Set(messages));
-    return unique.length > 0 ? unique : undefined;
+    return messages.length > 0 ? messages : undefined;
 }
 
 export function formatValidationErrors(
@@ -157,8 +155,7 @@ export type MeetingDetailedErrors = MeetingFormErrors & {
 };
 
 function leafErrors(node?: ErrorNode): string[] | undefined {
-    if (!node?.errors?.length) return undefined;
-    return Array.from(new Set(node.errors));
+    return node?.errors?.length ? node.errors : undefined;
 }
 
 export function formatDetailedValidationErrors(
@@ -184,8 +181,10 @@ export function formatDetailedValidationErrors(
 
     const announcementItemErrors = tree.properties?.announcements?.items?.map((item) => leafErrors(item));
 
+    const { wardBusiness, speakers, announcements, ...rest } = formatValidationErrors(error);
+
     return {
-        ...formatValidationErrors(error),
+        ...rest,
         speakerItemErrors: speakerItemErrors?.some(Boolean) ? speakerItemErrors : undefined,
         wardBusinessItemErrors: wardBusinessItemErrors?.some(Boolean) ? wardBusinessItemErrors : undefined,
         announcementItemErrors: announcementItemErrors?.some(Boolean) ? announcementItemErrors : undefined,

@@ -138,7 +138,6 @@ export function MeetingForm({ formAction, state, isPending, initialValues }: Mee
                         );
                     })}
                 </div>
-                <FieldErrors id="announcements-error" errors={state.errors?.announcements} />
                 <button type="button" onClick={() => setAnnouncements([...announcements, ''])} className={`${secondaryButtonClass} mt-3`}>
                     Add announcement
                 </button>
@@ -189,7 +188,6 @@ export function MeetingForm({ formAction, state, isPending, initialValues }: Mee
                         );
                     })}
                 </div>
-                <FieldErrors id="wardBusiness-error" errors={state.errors?.wardBusiness} />
                 <button type="button" onClick={() => setWardBusiness([...wardBusiness, { description: '' }])} className={`${secondaryButtonClass} mt-3`}>
                     Add item
                 </button>
@@ -260,7 +258,6 @@ export function MeetingForm({ formAction, state, isPending, initialValues }: Mee
                         );
                     })}
                 </div>
-                <FieldErrors id="speakers-error" errors={state.errors?.speakers} />
                 <button type="button" onClick={() => setSpeakers([...speakers, { name: '', topic: '', type: 'speaker' }])} className={`${secondaryButtonClass} mt-3`}>
                     Add program item
                 </button>
