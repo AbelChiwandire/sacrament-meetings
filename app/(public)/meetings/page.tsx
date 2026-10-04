@@ -30,11 +30,13 @@ export default async function MeetingsPage(props: {
       <MeetingSearch />
 
       {meetings.length === 0 ? (
-        <p>No meetings found</p>
+        <p className="mb-4">No meetings found</p>
       ) : (
-        meetings.map((meeting) => (
-          <MeetingCard key={meeting.id} meeting={meeting} />
-        ))
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {meetings.map((meeting) => (
+            <MeetingCard key={meeting.id} meeting={meeting} />
+          ))}
+        </div>
       )}
 
       <Pagination totalPages={totalPages} />
