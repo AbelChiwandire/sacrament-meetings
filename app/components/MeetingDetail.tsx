@@ -4,7 +4,7 @@ export default function MeetingDetail({meeting}: {meeting: SacramentMeeting}) {
     return (
         <div className="border p-4 rounded mb-4">
             <h3 className="text-xl font-bold">{meeting.meetingType} Meeting</h3>
-            <div className="mb-4 flex flex-col space-y-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 text-left sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0 [&>*]:break-words">
                 <p><strong>Date:</strong> {meeting.date}</p>
                 <p><strong>Meeting Type:</strong> {meeting.meetingType}</p>
                 <p><strong>Presiding:</strong> {meeting.presiding}</p>

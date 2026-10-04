@@ -1,3 +1,4 @@
+import Link from "next/link";
 import MeetingDetail from "../../../components/MeetingDetail";
 import { getMeetingById } from "../../../lib/meetings-db";
 import { validateInt } from "../../../lib/validation";
@@ -22,6 +23,11 @@ export default async function MeetingPage({
 
   return (
     <div className="p-4 text-center">
+      <div className="mb-4 text-left">
+        <Link href="/meetings" className="text-blue-700 hover:underline">
+          &larr; Back to Meetings
+        </Link>
+      </div>
       <h2 className="text-2xl font-bold mb-4">Meeting Details</h2>
       <MeetingDetail meeting={meeting} />
     </div>
