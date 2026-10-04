@@ -1,5 +1,6 @@
 'use server';
 
+import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import {
@@ -13,6 +14,14 @@ import {
     formatDetailedValidationErrors,
     type MeetingDetailedErrors,
 } from './schema';
+import { signIn } from '@/auth';
+import { AuthError } from 'next-auth';
+
+async function requireOwnerSession() {
+  const session = await auth();
+  if (!session?.user) throw new Error('Not authenticated');
+  return session;
+}
 
 export type State = {
     errors?: MeetingDetailedErrors;
@@ -92,6 +101,8 @@ export async function createMeetingAction(
     _prevState: State,
     formData: FormData
 ): Promise<State> {
+    await requireOwnerSession();
+
     const validatedData = validateMeetingForm(formData);
     if (!validatedData.success) {
         return {
@@ -113,6 +124,8 @@ export async function updateMeetingAction(
     _prevState: State,
     formData: FormData
 ): Promise<State> {
+    await requireOwnerSession();
+
     const parsedId = MeetingIdSchema.safeParse(id);
     if (!parsedId.success) {
         return { message: 'Invalid meeting id.' };
@@ -139,6 +152,8 @@ export async function deleteMeetingAction(
     _prevState: State,
     _formData: FormData
 ): Promise<State> {
+    await requireOwnerSession();
+
     const parsedId = MeetingIdSchema.safeParse(id);
     if (!parsedId.success) {
         return { message: 'Invalid meeting id.' };
@@ -149,4 +164,23 @@ export async function deleteMeetingAction(
         'deleteMeetingAction failed:'
     );
     return result ?? {};
+}
+
+export async function authenticate(
+  prevState: string | undefined,
+  formData: FormData,
+) {
+  try {
+    await signIn('credentials', formData);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Invalid email or password.';
+        default:
+          return 'Something went wrong.';
+      }
+    }
+    throw error; // re-throw so Next.js handles redirects correctly
+  }
 }
