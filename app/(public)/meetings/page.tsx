@@ -1,9 +1,16 @@
+import Link from "next/link";
+import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getMeetings, getMeetingsTotalPages } from "../../lib/meetings-db";
 import { MeetingSearch } from "../../components/MeetingSearch";
 import { Pagination } from "../../components/Pagination";
 import MeetingCard from "../../components/MeetingCard";
 import { validateInt } from "../../lib/validation";
+
+export const metadata: Metadata = {
+  title: 'Meetings | Sacrament Meetings',
+  description: 'List of sacrament meetings.'
+};
 
 export default async function MeetingsPage(props: {
   searchParams?: Promise<{ query?: string; page?: string }>;
@@ -26,7 +33,15 @@ export default async function MeetingsPage(props: {
 
   return (
     <div className="p-4 text-center">
-      <h2 className="text-2xl font-bold mb-4">Sacrament Meetings</h2>
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h2 className="text-2xl font-bold">Sacrament Meetings</h2>
+        <Link
+          href="/meetings/new"
+          className="rounded border border-slate-800 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-slate-800 hover:text-white"
+        >
+          Add Meeting
+        </Link>
+      </div>
       <MeetingSearch />
 
       {meetings.length === 0 ? (

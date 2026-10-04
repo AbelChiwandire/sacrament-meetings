@@ -10,8 +10,13 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Sacrament Meetings Home",
-  description: "Home page for sacrament meetings",
+  title: {
+    default: 'Home | Sacrament Meetings',
+    template: '%s | Sacrament Meetings',
+  },
+  description:
+    'Home page for sacrament meetings.',
+  metadataBase: new URL('https://sacrament-meetings-omega.vercel.app'),
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
