@@ -24,7 +24,7 @@ export default async function MeetingPage({
   return (
     <div className="p-4 text-center">
       <div className="mb-4 text-left">
-        <Link href="/meetings" className="text-blue-700 hover:underline">
+        <Link href="/meetings" className="text-black hover:underline">
           &larr; Back to Meetings
         </Link>
       </div>
